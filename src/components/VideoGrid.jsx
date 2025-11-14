@@ -113,18 +113,29 @@ const VideoGrid = ({ videos }) => {
           key={v.id} // Key is crucial for AnimatePresence
           // This wrapper div creates the consistent shape - vertical panels like billboards
           // Use minHeight if available, otherwise use aspect ratio as fallback
-          className="rounded-lg overflow-hidden bg-gray-900 w-full flex items-center justify-center"
-          style={minHeight ? { height: `${minHeight}px` } : { aspectRatio: '3/4' }}
+          className="rounded-lg overflow-hidden bg-gray-900 w-full"
+          style={minHeight ? { height: `${minHeight}px` } : { aspectRatio: '3/4', minHeight: '400px' }}
           variants={videoVariants}
         >
           <video
-            ref={(el) => (videoRefs.current[index] = el)}
+            ref={(el) => {
+              videoRefs.current[index] = el;
+              // Disable picture-in-picture and other controls
+              if (el) {
+                el.disablePictureInPicture = true;
+                el.setAttribute('disablePictureInPicture', 'true');
+              }
+            }}
             src={v.url}
             autoPlay
             loop
             muted
-            playsInline // Important for iOS
-            className="w-full h-full object-contain" // Changed to object-contain to show full video without cropping
+            playsInline
+            disablePictureInPicture
+            controlsList="nodownload nofullscreen noremoteplayback"
+            style={{ objectFit: 'cover' }}
+            className="w-full h-full"
+            onContextMenu={(e) => e.preventDefault()}
           />
         </motion.div>
       ))}

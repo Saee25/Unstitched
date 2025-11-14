@@ -9,12 +9,12 @@ const VideoToggle = () => {
 
   return (
     // Main container: stacks vertically on mobile, row on desktop
-    <div className="flex flex-col md:flex-row gap-10 w-full h-full">
+    <div className="flex flex-col md:flex-row gap-10 w-full">
       
       {/* LEFT COLUMN */}
       {/* Takes full width on mobile, 1/3 on desktop */}
       {/* Uses flex-col and justify-between to push content to top and bottom */}
-      <div className="w-full md:w-1/3 flex flex-col justify-between md:h-[80vh] px-4 md:px-10">
+      <div className="w-full md:w-1/3 flex flex-col justify-between md:min-h-[70vh] px-4 md:px-10 py-8 md:py-12">
         
         {/* Top Content (Title + Buttons) */}
         <div>
@@ -28,7 +28,7 @@ const VideoToggle = () => {
         </div>
 
         {/* Bottom Content (Description) */}
-        <p className="text-lg text-white mt-8 md:mt-0">
+        <p className="text-lg text-white mt-8 md:mt-6 mb-8 md:mb-0">
           Showcase your brand through Immersive video content
         </p>
       </div>
