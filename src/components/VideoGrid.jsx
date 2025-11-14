@@ -88,6 +88,13 @@ const VideoGrid = ({ videos }) => {
         delayChildren: 0.05,
       }
     },
+    exit: {
+      opacity: 0,
+      transition: {
+        staggerChildren: 0.05,
+        staggerDirection: -1,
+      }
+    }
   };
 
   return (

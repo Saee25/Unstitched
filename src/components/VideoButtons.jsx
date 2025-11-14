@@ -1,5 +1,5 @@
 import React from 'react';
-import { categories } from './VideoData'; // Import categories
+import { categories } from './VideoData';
 
 const VideoButtons = ({ active, setActive }) => {
   return (
