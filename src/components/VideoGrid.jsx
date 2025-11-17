@@ -1,145 +1,88 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef } from 'react';
+import { motion } from 'framer-motion';
+
+// Define animation "variants" for the grid container
+const gridContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12, // Slightly increased stagger for more visibility (was 0.1)
+      delayChildren: 0.1,    // Delay before the first child starts animating
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.1,         // How long the grid fades out
+      when: "afterChildren", // Ensures children exit before the container
+    },
+  },
+};
+
+// Define animation "variants" for each video item
+const videoItemVariants = {
+  hidden: { y: 30, opacity: 0 }, // Start further down (was 20px)
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",        // Use a spring animation for a more natural feel
+      damping: 20,           // Less "bounce"
+      stiffness: 150,        // How quickly it reaches its target
+      mass: 0.5,             // Weight of the animating element
+    },
+  },
+  exit: {
+    y: -30,                  // Exit further up (was -20px)
+    opacity: 0,
+    transition: {
+      duration: 0.2,         // Quicker fade out for individual items
+    },
+  },
+};
 
 const VideoGrid = ({ videos }) => {
-  const [minHeight, setMinHeight] = useState(null);
   const videoRefs = useRef([]);
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    // Find the shortest video's natural height and use it for all videos
-    const checkVideoHeights = () => {
-      const loadedVideos = videoRefs.current.filter(ref => ref && ref.videoHeight && ref.videoWidth);
-      
-      if (loadedVideos.length === videos.length) {
-        // Find the video with the smallest natural height (shortest vertical length)
-        const heights = loadedVideos.map(ref => ref.videoHeight);
-        const shortestHeight = Math.min(...heights);
-        
-        // Use the shortest video's height as the reference
-        // Scale it proportionally based on container width to maintain aspect ratio
-        if (containerRef.current) {
-          const containerWidth = containerRef.current.offsetWidth;
-          const isMobile = window.innerWidth < 768; // md breakpoint
-          const gap = isMobile ? 16 : 24; // gap-4 = 16px, gap-6 = 24px
-          
-          // Calculate available width per video
-          const videosPerRow = isMobile ? 1 : 3;
-          const availableWidth = (containerWidth - (gap * (videosPerRow - 1))) / videosPerRow;
-          
-          // Find the video with shortest height and get its aspect ratio
-          const shortestVideo = loadedVideos.find(ref => ref.videoHeight === shortestHeight);
-          if (shortestVideo) {
-            const aspectRatio = shortestVideo.videoWidth / shortestVideo.videoHeight;
-            // Calculate height that maintains the aspect ratio with available width
-            const calculatedHeight = availableWidth / aspectRatio;
-            setMinHeight(calculatedHeight);
-          }
-        }
-      }
-    };
-
-    // Check heights when videos are loaded
-    videoRefs.current.forEach((ref) => {
-      if (ref) {
-        if (ref.readyState >= 1) { // HAVE_METADATA
-          checkVideoHeights();
-        } else {
-          ref.addEventListener('loadedmetadata', checkVideoHeights, { once: true });
-        }
-      }
-    });
-
-    // Also check on window resize
-    const handleResize = () => {
-      setTimeout(checkVideoHeights, 100); // Small delay to ensure container has resized
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      videoRefs.current.forEach((ref) => {
-        if (ref) {
-          ref.removeEventListener('loadedmetadata', checkVideoHeights);
-        }
-      });
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [videos]);
-
-  const videoVariants = {
-    hidden: { opacity: 0, y: 15, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
-      }
-    },
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08, // Stagger the video animations for smooth cascade
-        delayChildren: 0.05,
-      }
-    },
-    exit: {
-      opacity: 0,
-      transition: {
-        staggerChildren: 0.05,
-        staggerDirection: -1,
-      }
-    }
-  };
 
   return (
-    // This grid stacks on mobile (grid-cols-1) and goes to 3 columns on desktop (md:grid-cols-3)
-    <motion.div 
-      ref={containerRef} 
-      className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-    >
-      {videos.map((v, index) => (
-        // The motion.div handles the animation
-        <motion.div
-          key={v.id} // Key is crucial for AnimatePresence
-          // This wrapper div creates the consistent shape - vertical panels like billboards
-          // Use minHeight if available, otherwise use aspect ratio as fallback
-          className="rounded-lg overflow-hidden bg-gray-900 w-full"
-          style={minHeight ? { height: `${minHeight}px` } : { aspectRatio: '3/4', minHeight: '400px' }}
-          variants={videoVariants}
-        >
-          <video
-            ref={(el) => {
-              videoRefs.current[index] = el;
-              // Disable picture-in-picture and other controls
-              if (el) {
-                el.disablePictureInPicture = true;
-                el.setAttribute('disablePictureInPicture', 'true');
-              }
-            }}
-            src={v.url}
-            autoPlay
-            loop
-            muted
-            playsInline
-            disablePictureInPicture
-            controlsList="nodownload nofullscreen noremoteplayback"
-            style={{ objectFit: 'cover' }}
-            className="w-full h-full"
-            onContextMenu={(e) => e.preventDefault()}
-          />
-        </motion.div>
-      ))}
-    </motion.div>
+    <>
+      <motion.div
+        variants={gridContainerVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full"
+      >
+        {videos.map((v, index) => (
+          <motion.div
+            key={v.id}
+            variants={videoItemVariants}
+            className="rounded-lg overflow-hidden bg-gray-900 w-full aspect-[9/16]"
+          >
+            <video
+              ref={(el) => {
+                videoRefs.current[index] = el;
+                if (el) {
+                  el.disablePictureInPicture = true;
+                  el.setAttribute('disablePictureInPicture', 'true');
+                }
+              }}
+              src={v.url}
+              autoPlay
+              loop
+              muted
+              playsInline
+              disablePictureInPicture
+              controlsList="nodownload nofullscreen noremoteplayback"
+              style={{ objectFit: 'cover' }}
+              className="w-full h-full"
+              onContextMenu={(e) => e.preventDefault()}
+            />
+          </motion.div>
+        ))}
+      </motion.div>
+    </>
   );
 };
 
