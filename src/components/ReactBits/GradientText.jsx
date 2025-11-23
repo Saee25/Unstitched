@@ -14,7 +14,7 @@ export default function GradientText({
     <span className={`relative inline-flex leading-none ${className}`}>
       {showBorder && (
         <div
-          className="absolute inset-0 bg-cover z-0 pointer-events-none animate-gradient"
+          className="absolute inset-0 bg-cover z-0 pointer-events-none animate-gradient-move"
           style={{ ...gradientStyle, backgroundSize: "300% 100%" }}
         >
           <div
@@ -31,12 +31,13 @@ export default function GradientText({
       )}
 
       <span
-        className="text-transparent bg-cover animate-gradient"
+        className="text-transparent bg-cover animate-gradient-move"
         style={{
           ...gradientStyle,
           backgroundClip: "text",
           WebkitBackgroundClip: "text",
-          backgroundSize: "300% 100%"
+          backgroundSize: "300% 100%",
+          backgroundPosition: "0% 50%",
         }}
       >
         {children}
